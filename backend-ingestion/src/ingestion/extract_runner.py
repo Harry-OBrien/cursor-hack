@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import urlparse
 
 from ingestion.tavily_client import TavilyClient
 
@@ -21,17 +22,18 @@ class ExtractRunner:
 
     def prioritize_urls(self, urls: list[str], *, limit: int = 50) -> list[str]:
         """Rank URLs for extract budget (homepage, product, pricing first)."""
-        def score(url: str) -> int:
-            lower = url.lower()
-            if lower.endswith("/") or lower.count("/") <= 3:
-                return 0
-            for i, hint in enumerate(PRIORITY_PATH_HINTS, start=1):
-                if hint in lower:
-                    return i
-            return 99
-
-        return sorted(urls, key=score)[:limit]
+        return sorted(urls, key=_url_priority)[:limit]
 
     def run(self, urls: list[str]) -> list[dict[str, Any]]:
-        prioritized = self.prioritize_urls(urls)
-        return self._client.extract(prioritized)
+        return self._client.extract(self.prioritize_urls(urls))
+
+
+def _url_priority(url: str) -> int:
+    lower = url.lower()
+    path = urlparse(lower).path.rstrip("/") or "/"
+    if path == "/":
+        return 0
+    for index, hint in enumerate(PRIORITY_PATH_HINTS, start=1):
+        if hint in lower:
+            return index
+    return 99
