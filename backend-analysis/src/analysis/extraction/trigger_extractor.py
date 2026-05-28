@@ -1,61 +1,42 @@
-"""Extract unigrams, bigrams, key phrases from prompt runs."""
+"""Orchestrate phrase, keyphrase, and entity extraction."""
 
 from __future__ import annotations
 
-import re
-from collections import Counter, defaultdict
 from typing import Any
 
-WORD_RE = re.compile(r"[a-z0-9][a-z0-9\-]{2,}")
+from analysis.extraction.candidate_merger import merge_provenance_maps, to_candidates
+from analysis.extraction.entity_extractor import extract_entities
+from analysis.extraction.keyphrase_extractor import extract_keyphrases
+from analysis.extraction.phrase_extractor import extract_phrases
 
 
 class TriggerExtractor:
-    STOPWORDS = frozenset(
-        "the a an and or for to of in on with is are was were be been being".split()
-    )
-
-    def extract(self, prompt_runs: list[dict[str, Any]]) -> Counter[str]:
-        counts: Counter[str] = Counter()
-        for run in prompt_runs:
-            text = (run.get("response_text") or "").lower()
-            tokens = [t for t in WORD_RE.findall(text) if t not in self.STOPWORDS]
-            counts.update(tokens)
-            for i in range(len(tokens) - 1):
-                counts[f"{tokens[i]} {tokens[i+1]}"] += 1
-        return counts
+    def extract_all(
+        self,
+        prompt_runs: list[dict[str, Any]],
+        fragments_by_run: dict[str, list[dict[str, Any]]],
+        facts: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        phrase_map = extract_phrases(prompt_runs, fragments_by_run)
+        keyphrase_map = extract_keyphrases(prompt_runs, fragments_by_run)
+        entity_map = extract_entities(prompt_runs, fragments_by_run, facts)
+        merged = merge_provenance_maps(phrase_map, keyphrase_map, entity_map)
+        return merged
 
     def to_candidates(
         self,
-        counts: Counter[str],
+        provenance_map: dict[str, Any],
         *,
         brand_id: str,
         batch_run_id: str,
         prompt_runs: list[dict[str, Any]],
         intent_by_prompt: dict[str, str],
     ) -> list[dict[str, Any]]:
-        total_runs = max(len(prompt_runs), 1)
-        candidates: list[dict[str, Any]] = []
-        for phrase, count in counts.most_common(100):
-            phrase_type = "bigram" if " " in phrase else "unigram"
-            appearance_rate = count / total_runs
-            candidates.append(
-                {
-                    "phrase": phrase,
-                    "phrase_type": phrase_type,
-                    "appearance_count": count,
-                    "appearance_rate": appearance_rate,
-                    "intent_bucket": "mixed",
-                    "brand_id": brand_id,
-                    "batch_run_id": batch_run_id,
-                    "prompt_run_ids": [r["prompt_run_id"] for r in prompt_runs[:5]],
-                    "source_page_ids": _collect_source_ids(prompt_runs),
-                }
-            )
-        return candidates
-
-
-def _collect_source_ids(runs: list[dict]) -> list[str]:
-    ids: list[str] = []
-    for r in runs:
-        ids.extend(r.get("source_page_ids") or [])
-    return list(dict.fromkeys(ids))[:20]
+        return to_candidates(
+            provenance_map,
+            brand_id=brand_id,
+            batch_run_id=batch_run_id,
+            total_runs=len(prompt_runs),
+            intent_by_prompt=intent_by_prompt,
+            prompt_runs=prompt_runs,
+        )

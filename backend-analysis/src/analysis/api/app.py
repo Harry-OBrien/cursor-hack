@@ -18,6 +18,10 @@ app.add_middleware(
 )
 
 
+def _analysis_dir(brand_id: str) -> Path:
+    return get_settings().data_dir / "brands" / brand_id / "analysis"
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "service": "analysis"}
@@ -25,14 +29,7 @@ def health() -> dict[str, str]:
 
 @app.get("/brands/{brand_id}/triggers")
 def get_triggers(brand_id: str) -> dict:
-    export = (
-        get_settings().data_dir
-        / "brands"
-        / brand_id
-        / "analysis"
-        / "export"
-        / "ranked_triggers.json"
-    )
+    export = _analysis_dir(brand_id) / "export" / "ranked_triggers.json"
     if not export.exists():
         raise HTTPException(404, "No analysis export for brand")
     return json.loads(export.read_text())
@@ -40,13 +37,15 @@ def get_triggers(brand_id: str) -> dict:
 
 @app.get("/brands/{brand_id}/prompt-runs")
 def get_prompt_runs(brand_id: str) -> list[dict]:
-    path = (
-        get_settings().data_dir
-        / "brands"
-        / brand_id
-        / "analysis"
-        / "prompt_runs.jsonl"
-    )
+    path = _analysis_dir(brand_id) / "prompt_runs.jsonl"
     if not path.exists():
         return []
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
+@app.get("/brands/{brand_id}/batch-run")
+def get_batch_run(brand_id: str) -> dict:
+    path = _analysis_dir(brand_id) / "batch_run.json"
+    if not path.exists():
+        raise HTTPException(404, "No analysis batch run for brand")
+    return json.loads(path.read_text())

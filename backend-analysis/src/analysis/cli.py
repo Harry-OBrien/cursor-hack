@@ -7,6 +7,7 @@ import json
 import typer
 from dotenv import load_dotenv
 
+from analysis.fixtures import SAMPLE_BRAND_ID, seed_fixture_data
 from analysis.pipeline import AnalysisPipeline
 from analysis.settings import get_settings
 
@@ -26,6 +27,20 @@ def analyze(brand_id: str = typer.Option(..., "--brand-id")) -> None:
     pipeline = AnalysisPipeline(get_settings())
     result = pipeline.run(brand_id)
     typer.echo(json.dumps(result, indent=2, default=str))
+
+
+@app.command()
+def score(brand_id: str = typer.Option(..., "--brand-id")) -> None:
+    pipeline = AnalysisPipeline(get_settings())
+    result = pipeline.rescore(brand_id)
+    typer.echo(json.dumps(result, indent=2, default=str))
+
+
+@app.command("seed-fixture")
+def seed_fixture() -> None:
+    paths = seed_fixture_data(get_settings().data_dir)
+    typer.echo(json.dumps(paths, indent=2))
+    typer.echo(f"Run: python -m analysis.cli analyze --brand-id {SAMPLE_BRAND_ID}")
 
 
 @app.command()
