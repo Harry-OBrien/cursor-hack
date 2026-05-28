@@ -13,9 +13,15 @@ python -m analysis.cli seed-fixture
 python -m analysis.cli analyze --brand-id 00000000-0000-4000-8000-000000000001
 ```
 
-## Depends on Engineer 1
+## Depends on Engineer 1 (wired)
 
-Reads `../data/brands/{brand_id}/ingestion/normalized/facts.jsonl` or ingestion API `http://localhost:8001`.
+Reads `data/brands/{brand_id}/ingestion/normalized/facts.jsonl` from the **same `DATA_DIR`** as ingestion (`../data` by default), or falls back to ingestion API `http://127.0.0.1:8001`.
+
+```bash
+python -m analysis.cli list-brands    # brands ready for analysis
+python -m analysis.cli test           # verify shared data dir
+python -m analysis.cli run-pipeline --name "Acme" --domain acme.com  # ingest + analyze
+```
 
 Use `seed-fixture` to copy `shared/fixtures/sample_facts.jsonl` for offline demos.
 

@@ -32,6 +32,7 @@ export function TriggerDetailPage() {
       <h1>{trigger.phrase}</h1>
       <p>Score: {trigger.trigger_score}</p>
       <SourceEvidencePanel
+        brandId={brandId}
         sourcePageIds={trigger.source_page_ids ?? []}
         promptRunIds={trigger.prompt_run_ids ?? []}
       />

@@ -15,9 +15,9 @@ from analysis.fixtures import SAMPLE_BRAND_ID
 @pytest.fixture
 def api_client(tmp_path, monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
-    from analysis.settings import get_settings
+    from analysis.settings import reload_settings
 
-    get_settings.cache_clear()
+    reload_settings()
     return TestClient(app)
 
 
@@ -78,6 +78,20 @@ def test_batch_run_returns_metadata(api_client: TestClient, tmp_path):
     response = api_client.get(f"/brands/{SAMPLE_BRAND_ID}/batch-run")
     assert response.status_code == 200
     assert response.json()["status"] == "completed"
+
+
+def test_start_analysis_requires_facts(api_client: TestClient):
+    response = api_client.post(f"/brands/{SAMPLE_BRAND_ID}/analyze")
+    assert response.status_code == 400
+
+
+def test_start_analysis_accepted(api_client: TestClient, tmp_path):
+    from analysis.fixtures import seed_fixture_data
+
+    seed_fixture_data(tmp_path)
+    response = api_client.post(f"/brands/{SAMPLE_BRAND_ID}/analyze")
+    assert response.status_code == 202
+    assert response.json()["status"] == "accepted"
 
 
 def test_prompt_runs_reads_jsonl(api_client: TestClient, tmp_path):

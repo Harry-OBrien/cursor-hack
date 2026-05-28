@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import type { ReactNode } from "react";
 
 export function AppLayout({ children }: { children: ReactNode }) {
@@ -9,16 +9,20 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <aside className="sidebar">
         <h2>Trigger Discovery</h2>
         <nav>
-          <Link to="/">Projects</Link>
-          <Link to="/brands/new">New brand</Link>
+          <NavLink to="/" end>
+            Projects
+          </NavLink>
+          <NavLink to="/brands/new">New brand</NavLink>
           {brandId && (
             <>
               <hr />
-              <Link to={`/brands/${brandId}`}>Overview</Link>
-              <Link to={`/brands/${brandId}/runs`}>Runs</Link>
-              <Link to={`/brands/${brandId}/knowledge`}>Knowledge</Link>
-              <Link to={`/brands/${brandId}/triggers`}>Triggers</Link>
-              <Link to={`/brands/${brandId}/export`}>Export</Link>
+              <NavLink to={`/brands/${brandId}`} end>
+                Overview
+              </NavLink>
+              <NavLink to={`/brands/${brandId}/runs`}>Runs</NavLink>
+              <NavLink to={`/brands/${brandId}/knowledge`}>Knowledge</NavLink>
+              <NavLink to={`/brands/${brandId}/triggers`}>Triggers</NavLink>
+              <NavLink to={`/brands/${brandId}/export`}>Export</NavLink>
             </>
           )}
         </nav>

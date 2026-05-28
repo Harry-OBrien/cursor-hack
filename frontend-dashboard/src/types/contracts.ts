@@ -8,6 +8,13 @@ export type IntentBucket =
   | "problem_solution"
   | "alternative_switching";
 
+export type BatchRunStatus =
+  | "pending"
+  | "running"
+  | "completed"
+  | "failed"
+  | "partial";
+
 export interface Brand {
   brand_id: string;
   name: string;
@@ -16,6 +23,18 @@ export interface Brand {
   seed_topics: string[];
   created_at: string;
   updated_at?: string;
+}
+
+export interface BatchRun {
+  batch_run_id: string;
+  brand_id: string;
+  run_type: "ingestion" | "analysis";
+  status: BatchRunStatus;
+  started_at: string;
+  finished_at?: string;
+  scoring_config_version?: string;
+  stats?: Record<string, number>;
+  errors?: Array<{ code: string; message: string }>;
 }
 
 export interface SourcePage {
@@ -37,6 +56,17 @@ export interface NormalizedFact {
   summary?: string;
   features?: string[];
   pain_points?: string[];
+}
+
+export interface PromptRun {
+  prompt_run_id: string;
+  prompt_id: string;
+  brand_id: string;
+  batch_run_id?: string;
+  status: string;
+  source_page_ids?: string[];
+  response_text?: string;
+  ran_at?: string;
 }
 
 export interface TriggerCandidate {
@@ -76,4 +106,19 @@ export interface TriggerDecision {
   decision: TriggerDecisionType;
   note?: string;
   decided_at: string;
+}
+
+export interface CreateBrandPayload {
+  name: string;
+  primary_domain: string;
+  competitor_domains?: string[];
+  seed_topics?: string[];
+  run_ingestion?: boolean;
+}
+
+export interface CreateBrandResponse {
+  brand_id: string;
+  status: string;
+  ingestion?: string;
+  poll?: string;
 }

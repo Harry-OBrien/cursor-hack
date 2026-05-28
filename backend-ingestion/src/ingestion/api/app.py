@@ -69,6 +69,14 @@ def list_brands() -> list[dict]:
     return _repo().list_brands()
 
 
+@app.get("/brands/{brand_id}")
+def get_brand(brand_id: str) -> dict:
+    path = _repo().brand_dir(brand_id) / "brand.json"
+    if not path.exists():
+        raise HTTPException(404, "Brand not found")
+    return json.loads(path.read_text())
+
+
 @app.post("/brands", status_code=202)
 def create_brand(
     body: CreateBrandRequest,

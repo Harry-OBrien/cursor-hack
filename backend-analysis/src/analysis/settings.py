@@ -1,3 +1,5 @@
+"""Runtime configuration."""
+
 from __future__ import annotations
 
 import json
@@ -5,6 +7,28 @@ import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
+from typing import Optional
+
+BACKEND_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = BACKEND_ROOT.parent
+
+
+def _load_env() -> None:
+    from dotenv import load_dotenv
+
+    env_file = BACKEND_ROOT / ".env"
+    if env_file.is_file():
+        load_dotenv(env_file, override=False)
+    load_dotenv(override=False)
+
+
+def _resolve_path(raw: Optional[str], default: Path) -> Path:
+    if not raw:
+        return default
+    path = Path(raw)
+    if path.is_absolute():
+        return path
+    return (BACKEND_ROOT / path).resolve()
 
 
 @dataclass(frozen=True)
@@ -21,17 +45,23 @@ class Settings:
 
 @lru_cache
 def get_settings() -> Settings:
-    repo_root = Path(__file__).resolve().parents[3]
+    _load_env()
     return Settings(
-        data_dir=Path(os.getenv("DATA_DIR", repo_root / "data")),
-        ingestion_api_url=os.getenv("INGESTION_API_URL", "http://127.0.0.1:8001"),
-        schemas_dir=Path(
-            os.getenv("SHARED_SCHEMAS_DIR", repo_root / "shared" / "schemas")
+        data_dir=_resolve_path(os.getenv("DATA_DIR"), REPO_ROOT / "data"),
+        ingestion_api_url=os.getenv("INGESTION_API_URL", "http://127.0.0.1:8001").rstrip(
+            "/"
         ),
-        scoring_config_path=Path(
-            os.getenv(
-                "SCORING_CONFIG",
-                repo_root / "shared" / "config" / "scoring.default.json",
-            )
+        schemas_dir=_resolve_path(
+            os.getenv("SHARED_SCHEMAS_DIR"),
+            REPO_ROOT / "shared" / "schemas",
+        ),
+        scoring_config_path=_resolve_path(
+            os.getenv("SCORING_CONFIG"),
+            REPO_ROOT / "shared" / "config" / "scoring.default.json",
         ),
     )
+
+
+def reload_settings() -> Settings:
+    get_settings.cache_clear()
+    return get_settings()

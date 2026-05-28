@@ -25,15 +25,18 @@ class AnalysisPipeline:
     def _analysis_dir(self, brand_id: str) -> Path:
         return self._settings.data_dir / "brands" / brand_id / "analysis"
 
+    def _load_facts(self, brand_id: str) -> list[dict[str, Any]]:
+        return self._ingestion.load_facts(brand_id)
+
     def generate_prompts_only(self, brand_id: str) -> int:
-        facts = self._ingestion.load_facts(brand_id)
+        facts = self._load_facts(brand_id)
         prompts = PromptGenerator().generate(brand_id, facts)
         self._save_prompts(brand_id, prompts)
         return len(prompts)
 
     def run(self, brand_id: str) -> dict[str, Any]:
         batch_run_id = str(uuid4())
-        facts = self._ingestion.load_facts(brand_id)
+        facts = self._load_facts(brand_id)
         adir = self._analysis_dir(brand_id)
 
         prompts = PromptGenerator().generate(brand_id, facts)
@@ -97,7 +100,7 @@ class AnalysisPipeline:
 
     def rescore(self, brand_id: str) -> dict[str, Any]:
         adir = self._analysis_dir(brand_id)
-        facts = self._ingestion.load_facts(brand_id)
+        facts = self._load_facts(brand_id)
         triggers = _read_jsonl(adir / "triggers.jsonl")
 
         if not triggers:

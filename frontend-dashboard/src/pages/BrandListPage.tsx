@@ -15,7 +15,7 @@ export function BrandListPage() {
     <div>
       <h1>Brand projects</h1>
       {error && <p role="alert">{error}</p>}
-      <ul>
+      <ul className="brand-list">
         {brands.map((b) => (
           <li key={b.brand_id}>
             <Link to={`/brands/${b.brand_id}`}>{b.name}</Link> — {b.primary_domain}

@@ -19,7 +19,7 @@ def _load_env() -> None:
 
     env_file = BACKEND_ROOT / ".env"
     if env_file.is_file():
-        load_dotenv(env_file, override=True)
+        load_dotenv(env_file, override=False)
     # Optional override from cwd (e.g. monorepo root .env)
     load_dotenv(override=False)
 

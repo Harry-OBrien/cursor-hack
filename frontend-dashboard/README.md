@@ -11,7 +11,22 @@ cp .env.example .env
 npm run dev   # http://localhost:5173
 ```
 
-Requires ingestion API (`:8001`) and analysis API (`:8002`) for live data, or use mock mode.
+Requires ingestion API (`:8001`) and analysis API (`:8002`) for live data, or set `VITE_USE_MOCK=true`.
+
+## Wired flows
+
+| Page | APIs |
+|------|------|
+| New brand | `POST /brands` (ingestion) → `/brands/:id/runs` |
+| Run status | Poll `GET .../batch-run` on ingestion + analysis; `POST .../analyze` |
+| Overview / Knowledge | `GET /facts`, `GET /source-pages` |
+| Triggers / Detail / Export | `GET /triggers`, `GET /prompt-runs` |
+
+```bash
+cp .env.example .env
+npm run dev
+npm run test
+```
 
 ## Routes
 
