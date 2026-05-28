@@ -6,24 +6,34 @@ export function SourceEvidencePanel({
   promptRunIds: string[];
 }) {
   return (
-    <div className="card">
-      <h3>Evidence</h3>
-      <p>
-        <strong>Source pages:</strong> {sourcePageIds.length || "—"}
-      </p>
-      <ul>
-        {sourcePageIds.map((id) => (
-          <li key={id}>{id}</li>
-        ))}
-      </ul>
-      <p>
-        <strong>Prompt runs:</strong> {promptRunIds.length || "—"}
-      </p>
-      <ul>
-        {promptRunIds.map((id) => (
-          <li key={id}>{id}</li>
-        ))}
-      </ul>
+    <div className="section-card section-card--static">
+      <h2 className="section-card__title">Source evidence</h2>
+      <div className="section-card__body">
+        <p>
+          <strong>Source pages</strong> ({sourcePageIds.length})
+        </p>
+        {sourcePageIds.length ? (
+          <ul className="evidence-list">
+            {sourcePageIds.map((id) => (
+              <li key={id}>{id}</li>
+            ))}
+          </ul>
+        ) : (
+          <p style={{ color: "var(--text-faint)", fontSize: "0.82rem" }}>No linked pages.</p>
+        )}
+        <p style={{ marginTop: "1rem" }}>
+          <strong>Prompt runs</strong> ({promptRunIds.length})
+        </p>
+        {promptRunIds.length ? (
+          <ul className="evidence-list">
+            {promptRunIds.map((id) => (
+              <li key={id}>{id}</li>
+            ))}
+          </ul>
+        ) : (
+          <p style={{ color: "var(--text-faint)", fontSize: "0.82rem" }}>No linked runs.</p>
+        )}
+      </div>
     </div>
   );
 }

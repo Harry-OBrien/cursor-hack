@@ -24,12 +24,12 @@ export const api = {
 
   getFacts: (brandId: string) =>
     useMock
-      ? Promise.resolve([])
+      ? Promise.resolve(mockFacts(brandId))
       : get<NormalizedFact[]>(`${ingestionBase}/brands/${brandId}/facts`),
 
   getSourcePages: (brandId: string) =>
     useMock
-      ? Promise.resolve([])
+      ? Promise.resolve(mockSourcePages(brandId))
       : get<SourcePage[]>(`${ingestionBase}/brands/${brandId}/source-pages`),
 
   getTriggers: (brandId: string) =>
@@ -40,7 +40,6 @@ export const api = {
         ),
 
   saveDecision: async (decision: TriggerDecision) => {
-    // MVP: localStorage; later POST to backend
     const key = `decisions:${decision.brand_id}`;
     const existing = JSON.parse(localStorage.getItem(key) ?? "[]");
     existing.push(decision);
@@ -48,16 +47,81 @@ export const api = {
   },
 };
 
+const MOCK_BRAND_ID = "00000000-0000-4000-8000-000000000001";
+
 const mockBrands: Brand[] = [
   {
-    brand_id: "00000000-0000-4000-8000-000000000001",
+    brand_id: MOCK_BRAND_ID,
     name: "Acme Analytics",
     primary_domain: "acme-analytics.example",
-    competitor_domains: [],
-    seed_topics: [],
+    competitor_domains: ["mixpanel.com", "amplitude.com"],
+    seed_topics: ["product analytics", "funnel tracking"],
     created_at: "2026-05-28T12:00:00Z",
   },
 ];
+
+function mockSourcePages(brandId: string): SourcePage[] {
+  return [
+    {
+      source_page_id: "sp1",
+      brand_id: brandId,
+      url: `https://${mockBrands[0].primary_domain}/`,
+      page_type: "homepage",
+      title: "Acme Analytics — Product analytics for growth teams",
+      last_crawled_at: "2026-05-28T10:00:00Z",
+    },
+    {
+      source_page_id: "sp2",
+      brand_id: brandId,
+      url: `https://${mockBrands[0].primary_domain}/pricing`,
+      page_type: "pricing",
+      title: "Pricing — Acme Analytics",
+      last_crawled_at: "2026-05-28T10:05:00Z",
+    },
+    {
+      source_page_id: "sp3",
+      brand_id: brandId,
+      url: `https://${mockBrands[0].primary_domain}/features`,
+      page_type: "product",
+      title: "Features — Funnels, cohorts, retention",
+      last_crawled_at: "2026-05-28T10:10:00Z",
+    },
+  ];
+}
+
+function mockFacts(brandId: string): NormalizedFact[] {
+  return [
+    {
+      normalized_fact_id: "nf1",
+      brand_id: brandId,
+      source_page_id: "sp1",
+      url: `https://${mockBrands[0].primary_domain}/`,
+      page_type: "homepage",
+      title: "Product analytics platform",
+      summary: "Self-serve analytics for product and growth teams.",
+      features: ["Funnel analysis", "Cohort retention", "Event tracking"],
+      pain_points: ["Fragmented data", "Slow insight cycles"],
+    },
+    {
+      normalized_fact_id: "nf2",
+      brand_id: brandId,
+      source_page_id: "sp2",
+      url: `https://${mockBrands[0].primary_domain}/pricing`,
+      page_type: "pricing",
+      title: "Transparent pricing",
+      summary: "Usage-based tiers starting at $99/mo for startups.",
+    },
+    {
+      normalized_fact_id: "nf3",
+      brand_id: brandId,
+      source_page_id: "sp3",
+      url: `https://${mockBrands[0].primary_domain}/features`,
+      page_type: "product",
+      title: "Core features",
+      summary: "Real-time dashboards, SQL access, and integrations.",
+    },
+  ];
+}
 
 function mockExport(brandId: string): RankedTriggersExport {
   return {
@@ -77,6 +141,64 @@ function mockExport(brandId: string): RankedTriggersExport {
         appearance_rate: 0.4,
         trigger_score: 0.82,
         recommended_action: "prioritize",
+        source_page_ids: ["sp1", "sp3"],
+        prompt_run_ids: ["pr1", "pr2"],
+      },
+      {
+        trigger_candidate_id: "t2",
+        brand_id: brandId,
+        batch_run_id: "mock-batch",
+        phrase: "funnel analysis tool",
+        phrase_type: "keyphrase",
+        intent_bucket: "transactional",
+        appearance_count: 9,
+        appearance_rate: 0.3,
+        trigger_score: 0.76,
+        recommended_action: "test",
+        source_page_ids: ["sp3"],
+        prompt_run_ids: ["pr3"],
+      },
+      {
+        trigger_candidate_id: "t3",
+        brand_id: brandId,
+        batch_run_id: "mock-batch",
+        phrase: "mixpanel alternative",
+        phrase_type: "keyphrase",
+        intent_bucket: "comparison",
+        appearance_count: 7,
+        appearance_rate: 0.23,
+        trigger_score: 0.71,
+        recommended_action: "prioritize",
+        source_page_ids: ["sp1"],
+        prompt_run_ids: ["pr4"],
+      },
+      {
+        trigger_candidate_id: "t4",
+        brand_id: brandId,
+        batch_run_id: "mock-batch",
+        phrase: "cohort retention",
+        phrase_type: "bigram",
+        intent_bucket: "informational",
+        appearance_count: 6,
+        appearance_rate: 0.2,
+        trigger_score: 0.65,
+        recommended_action: "monitor",
+        source_page_ids: ["sp3"],
+        prompt_run_ids: ["pr5"],
+      },
+      {
+        trigger_candidate_id: "t5",
+        brand_id: brandId,
+        batch_run_id: "mock-batch",
+        phrase: "startup analytics pricing",
+        phrase_type: "keyphrase",
+        intent_bucket: "commercial_investigation",
+        appearance_count: 5,
+        appearance_rate: 0.17,
+        trigger_score: 0.58,
+        recommended_action: "test",
+        source_page_ids: ["sp2"],
+        prompt_run_ids: ["pr6"],
       },
     ],
   };

@@ -6,10 +6,15 @@ export function CrawlSummaryCard({
   facts: number;
 }) {
   return (
-    <div className="card">
-      <h3>Crawl summary</h3>
-      <p>Source pages: {pages}</p>
-      <p>Normalized facts: {facts}</p>
+    <div className="stat-row">
+      <div className="stat-card">
+        <div className="stat-card__value">{pages}</div>
+        <div className="stat-card__label">Source pages</div>
+      </div>
+      <div className="stat-card">
+        <div className="stat-card__value">{facts}</div>
+        <div className="stat-card__label">Normalized facts</div>
+      </div>
     </div>
   );
 }

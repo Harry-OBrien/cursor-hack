@@ -1,5 +1,6 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Outlet } from "react-router-dom";
 import { AppLayout } from "./components/layout/AppLayout";
+import { LandingPage } from "./pages/LandingPage";
 import { BrandListPage } from "./pages/BrandListPage";
 import { BrandSetupPage } from "./pages/BrandSetupPage";
 import { BrandOverviewPage } from "./pages/BrandOverviewPage";
@@ -9,11 +10,20 @@ import { TriggerRankingPage } from "./pages/TriggerRankingPage";
 import { TriggerDetailPage } from "./pages/TriggerDetailPage";
 import { ExportPage } from "./pages/ExportPage";
 
-export default function App() {
+function DashboardLayout() {
   return (
     <AppLayout>
-      <Routes>
-        <Route path="/" element={<BrandListPage />} />
+      <Outlet />
+    </AppLayout>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route element={<DashboardLayout />}>
+        <Route path="/app" element={<BrandListPage />} />
         <Route path="/brands/new" element={<BrandSetupPage />} />
         <Route path="/brands/:brandId" element={<BrandOverviewPage />} />
         <Route path="/brands/:brandId/runs" element={<RunStatusPage />} />
@@ -24,7 +34,7 @@ export default function App() {
           element={<TriggerDetailPage />}
         />
         <Route path="/brands/:brandId/export" element={<ExportPage />} />
-      </Routes>
-    </AppLayout>
+      </Route>
+    </Routes>
   );
 }
