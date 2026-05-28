@@ -41,3 +41,17 @@ data/
 ## Scoring config
 
 `config/scoring.default.json` is versioned. Analysis reads `scoring_config_version` from batch run metadata.
+
+## Fixtures (integration demos)
+
+| File | Purpose |
+|------|---------|
+| `fixtures/sample_brand.json` | Demo brand record |
+| `fixtures/sample_facts.jsonl` | Normalized facts for sample brand |
+
+Seed local data for analysis without Tavily:
+
+```bash
+cd backend-analysis && python -m analysis.cli seed-fixture
+python -m analysis.cli analyze --brand-id 00000000-0000-4000-8000-000000000001
+```
